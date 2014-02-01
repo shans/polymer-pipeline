@@ -1,0 +1,134 @@
+<link rel="import" href="../components/polymer/polymer.html">
+
+<script>
+var types = {
+  "number" : {constructor: function() { return { type: 'number', state: 'ready',
+  value: undefined }; }}
+}
+
+function createPipe(type) {
+  return types[type].constructor();
+}
+</script>
+
+<polymer-element name="pl-push-node">
+  <script>
+    Polymer('pl-push-node', {
+      ready: function() {
+        if (this.inputSpec == undefined) { this.inputSpec = {}; }
+        if (this.outputSpec == undefined) { this.outputSpec = {}; }
+        this.inputs = {};
+        this.outputs = {};
+        this.outputsObserver = new ObjectObserver(this.outputs);
+        // observe changes in output pipes
+        this.outputsObserver.open(function(added, removed, changed, getOldValueFn) {
+          Object.keys(added).forEach(function(property) {
+            if (this.outputSpec[property] == undefined) {
+              this.state = "ERROR";
+              return;
+            }
+            if (added[property].type != this.outputSpec[property]) {
+              this.state = "ERROR";
+              return;
+            }
+          }.bind(this));
+        }.bind(this));
+        this.inputsObserver = new ObjectObserver(this.inputs);
+        // observe changes in input pipes
+        this.inputsObserver.open(function(added, removed, changed, getOldValueFn) {
+          console.log(added, removed, changed);
+          Object.keys(added).forEach(function(property) {
+            if (this.inputSpec[property] == undefined) {
+              this.state = "ERROR";
+              return;
+            }
+            if (added[property].type != this.inputSpec[property]) {
+              this.state = "ERROR";
+              return;
+            }
+            new PathObserver(this.inputs[property], 'value').open(function(newValue, oldValue) {
+              this.updateOutputs();
+            }.bind(this));
+          }.bind(this));
+        }.bind(this));
+        // watch registered attributes
+        Object.keys(this.publish).forEach(function(attribute) {
+          console.log(this.inputSpec, this.outputSpec, attribute);
+          if (this.inputSpec[attribute] !== undefined) {
+            var value = this.inputs;
+          } else if (this.outputSpec[attribute] !== undefined) {
+            var value = this.outputs;
+          } else {
+            return;
+          }
+          new PathObserver(this, attribute).open(function(newValue, oldValue) {
+            value[attribute] = newValue;
+          });
+        }.bind(this));
+      },
+      state: "OK",
+      updateOutputs: function() {
+        console.log('updating', this.inputs);
+        var inputs = Object.keys(this.inputs);
+        if (inputs.length == 0) {
+          result = this.trigger();
+        } else if (inputs.length == 1) {
+          result = this.trigger(this.inputs[inputs[0]].value);
+        } else {
+          var iObj = {}
+          for (var i = 0; i < inputs.length; i++) {
+            iObj[inputs[i]] = this.inputs[inputs[i]].value;
+            result = this.trigger(iObj);
+          }
+        }
+        var outputs = Object.keys(this.outputs);
+        console.log(outputs, result);
+        if (outputs.length == 0) {
+          return;
+        } else if (outputs.length == 1) {
+          console.log(this.outputs);
+          this.outputs[outputs[0]].value = result;
+        } else {
+          for (var output in Object.keys(result)) {
+            this.outputs[output].value = result[output];
+          }
+        }
+      },
+      trigger: function() {
+        console.log(arguments);
+      }
+    });
+  </script>
+</polymer-element>
+
+<polymer-element name="pl-timer" extends="pl-push-node" attributes='time period'>
+  <script>
+    Polymer('pl-timer', {
+      period: 100,
+      ready: function() {
+        this.outputSpec = {'time':'number'};
+        this.super();
+        console.log(this.inputs);
+        setInterval(this.updateOutputs.bind(this), this.period);
+      },
+      trigger: function() {
+        return performance.now();
+      }
+    });
+  </script>
+</polymer-element>
+
+<polymer-element name="pl-passthrough" extends="pl-push-node" attributes='in out'>
+  <script>
+    Polymer('pl-passthrough', {
+      ready: function() {
+        this.inputSpec = {'in':"number"};
+        this.outputSpec = {'out':"number"};
+        this.super();
+      },
+      trigger: function(val) {
+        return val;
+      }
+    });
+  </script>
+</polymer-element>

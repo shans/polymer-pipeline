@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <script src="components/platform/platform.js"></script>
+  <link rel="import" href="elements/pl-push-node.html">
+</head>
+<body>
+  <pl-timer period='1000'></pl-timer>
+  <pl-passthrough></pl-passthrough>
+</body>
+<script>
+onload = function() {
+var a = document.querySelector('pl-passthrough');
+a.in = createPipe('number');
+a.out = createPipe('number');
+var b = document.querySelector('pl-timer');
+b.time = a.in;
+}
+</script>
+</html>
