@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <script src="components/platform/platform.js"></script>
+  <link rel="import" href="elements/pl-canvas.html">
+  <link rel="import" href="elements/pl-html-visualizer.html">
+  <style>
+    #visBox {
+      width: 1000px;
+      height: 300px;
+      overflow: hidden;
+      background-color: #EFE;
+      -webkit-user-select: none;
+    }
+
+    #visBox pl-html-visualizer {
+      width: 100px;
+      height: 50px;
+      font-size: 10px;
+    }
+  </style>
+</head>
+<body>
+<div id='visBox'>
+  <pl-html-visualizer name="source">
+    <pl-point-source></pl-point-source>
+  </pl-html-visualizer>
+  <pl-html-visualizer name="encircle">
+    <pl-encircle></pl-encircle>
+  </pl-html-visualizer>
+  <pl-html-visualizer name="canvas">
+    <pl-canvas-sink></pl-canvas-sink>
+  </pl-html-visualizer>
+</div>
+<canvas width='300px' height='300px' id='output'></canvas>
+</body>
+<script>
+var pointSource = document.querySelector('pl-point-source');
+var encircle = document.querySelector('pl-encircle');
+var canvasSink = document.querySelector('pl-canvas-sink');
+canvasSink.addEventListener('ready', function() {
+  canvasSink.context = output.getContext('2d');
+  encircle.in = pointSource.out;
+  canvasSink.in = encircle.out;
+  setTimeout(function() {
+    pointSource.points = [{x:100, y:100}, {x:200, y:100}, {x:100, y:200}, 
+                          {x:200, y:200}]}, 500);
+});
+</script>
+</html>

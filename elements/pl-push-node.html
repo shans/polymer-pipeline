@@ -2,12 +2,12 @@
 
 <script>
 var types = {
-  "number" : {constructor: function() { return { type: 'number', state: 'ready',
-  value: undefined }; }}
+  "number" : { initial: undefined },
+  "pointlist" : { initial: [] }
 }
 
 function createPipe(type) {
-  return types[type].constructor();
+  return {type: type, state: 'ready', initial: types[type].initial};
 }
 </script>
 

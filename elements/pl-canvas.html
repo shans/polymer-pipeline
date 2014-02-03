@@ -1,0 +1,64 @@
+<link rel="import" href="pl-push-node.html">
+
+<polymer-element name="pl-point-source" extends="pl-push-node" attributes="out points">
+  <script>
+    Polymer('pl-point-source', {
+      ready: function() {
+        this.outputSpec = {'out':'pointlist'};
+        this.super();
+      },
+      trigger: function() {
+        return this.points;
+      },
+      points: [],
+      pointsChanged: function() {
+        this.updateOutputs();
+      }
+    });
+  </script>
+</polymer-element>
+
+<polymer-element name="pl-encircle" extends="pl-push-node" attributes='in out width num'>
+  <script>
+    Polymer('pl-encircle', {
+      ready: function() {
+        this.inputSpec = {'in':'pointlist'};
+        this.outputSpec = {'out':'pointlist'};
+        this.super();
+      },
+      width: 10,
+      num: 20,
+      trigger: function(points) {
+        var result = [];
+        points.forEach(function(point) {
+          for (var i = 0; i < this.num; i++) {
+            result.push(
+              {x: point.x + this.width * Math.sin(2*Math.PI * i / this.num),
+               y: point.y + this.width * Math.cos(2*Math.PI * i / this.num)});
+          }
+        }.bind(this));
+        return result;
+      }
+    });
+  </script>
+</polymer-element>
+
+<polymer-element name="pl-canvas-sink" extends="pl-push-node" attributes='in context'>
+  <script>
+    Polymer('pl-canvas-sink', {
+      ready: function() {
+        this.inputSpec = {'in':'pointlist'};
+        this.super();
+      },
+      context: undefined,
+      trigger: function(points) {
+        if (this.context) {
+          points.forEach(function(point) {
+            this.context.fillRect(point.x, point.y, 1, 1);
+          }.bind(this));
+        }
+      }
+    });
+  </script>
+</polymer-element>
+
