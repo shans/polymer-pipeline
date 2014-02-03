@@ -17,6 +17,7 @@
       white-space: nowrap;
       padding-left: 5px;
       padding-right: 5px;
+      cursor: default;
     }
     #name {
       overflow: hidden;
@@ -45,6 +46,8 @@ Polymer('pl-html-visualizer', {
   y: 0,
   yChanged: function() {
     this.$.box.style.top = this.y + 'px';
+    this._updateCon(this.inputConnectors, this.node.inputs);
+    this._updateCon(this.outputConnectors, this.node.outputs);
   },
   _updateCon: function(clist, nlist) {
     for (var cname in clist) {
