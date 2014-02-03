@@ -31,12 +31,12 @@ function createPipe(type) {
               this.state = "ERROR";
               return;
             }
+            this.fire('outputChanged', {name: property, pipe: added[property]});
           }.bind(this));
         }.bind(this));
         this.inputsObserver = new ObjectObserver(this.inputs);
         // observe changes in input pipes
         this.inputsObserver.open(function(added, removed, changed, getOldValueFn) {
-          console.log(added, removed, changed);
           Object.keys(added).forEach(function(property) {
             if (this.inputSpec[property] == undefined) {
               this.state = "ERROR";
@@ -49,6 +49,7 @@ function createPipe(type) {
             new PathObserver(this.inputs[property], 'value').open(function(newValue, oldValue) {
               this.updateOutputs();
             }.bind(this));
+            this.fire('inputChanged', {name: property, pipe: added[property]});
           }.bind(this));
         }.bind(this));
         // watch registered attributes
@@ -58,6 +59,8 @@ function createPipe(type) {
             var value = this.inputs;
           } else if (this.outputSpec[attribute] !== undefined) {
             var value = this.outputs;
+            this[attribute] = createPipe(this.outputSpec[attribute]);
+            value[attribute] = this[attribute];
           } else {
             return;
           }
@@ -65,10 +68,11 @@ function createPipe(type) {
             value[attribute] = newValue;
           });
         }.bind(this));
+        // Fire 'ready' event
+        this.fire('ready');
       },
       state: "OK",
       updateOutputs: function() {
-        console.log('updating', this.inputs);
         var inputs = Object.keys(this.inputs);
         if (inputs.length == 0) {
           result = this.trigger();
@@ -86,7 +90,6 @@ function createPipe(type) {
         if (outputs.length == 0) {
           return;
         } else if (outputs.length == 1) {
-          console.log(this.outputs);
           this.outputs[outputs[0]].value = result;
         } else {
           for (var output in Object.keys(result)) {
@@ -108,7 +111,6 @@ function createPipe(type) {
       ready: function() {
         this.outputSpec = {'time':'number'};
         this.super();
-        console.log(this.inputs);
         setInterval(this.updateOutputs.bind(this), this.period);
       },
       trigger: function() {
@@ -128,6 +130,21 @@ function createPipe(type) {
       },
       trigger: function(val) {
         return val;
+      }
+    });
+  </script>
+</polymer-element>
+
+<polymer-element name="pl-adder" extends="pl-push-node" attributes='a b out'>
+  <script>
+    Polymer('pl-adder', {
+      ready: function() {
+        this.inputSpec = {'a': 'number', 'b': 'number'};
+        this.outputSpec = {'out': 'number'};
+        this.super();
+      },
+      trigger: function(inp) {
+        return inp.a + inp.b;
       }
     });
   </script>

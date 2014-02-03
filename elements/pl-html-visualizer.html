@@ -1,0 +1,238 @@
+<link rel="import" href="../components/polymer/polymer.html">
+
+<polymer-element name="pl-html-visualizer" attributes="x y name">
+<template>
+  <style>
+    :host {
+      display: flex;
+    }
+
+    #box {
+      -webkit-user-select: none;
+      width: 90px; /* FIXME */
+      position: absolute;
+      border: 1px solid black;
+      font-size: 12px;
+      text-align: center;
+      white-space: nowrap;
+      padding-left: 5px;
+      padding-right: 5px;
+    }
+    #name {
+      overflow: hidden;
+    }
+
+    .connection {
+      width: 10px;
+      height: 10px;
+      border: 1px solid black;
+      border-radius: 5px;
+      position: absolute;
+    }
+  </style>
+  <div id='box' on-mousedown='{{mouseDown}}' on-mousemove='{{mouseMove}}'
+                on-mouseup='{{mouseUp}}'><div id='name'>{{name}}</div><content/></div>
+</template>
+<script>
+Polymer('pl-html-visualizer', {
+  dragging: false,
+  x: 0,
+  xChanged: function() {
+    this.$.box.style.left = this.x + 'px';
+    this._updateCon(this.inputConnectors, this.node.inputs);
+    this._updateCon(this.outputConnectors, this.node.outputs);
+  },
+  y: 0,
+  yChanged: function() {
+    this.$.box.style.top = this.y + 'px';
+  },
+  _updateCon: function(clist, nlist) {
+    for (var cname in clist) {
+      var n = nlist[cname];
+      if (n) {
+        var spec = this.registry.map.get(n);
+        this.updateConnection(spec);
+      }
+    }
+  },
+  name: undefined,
+  mouseDown: function(e) { this.dragging = [e.x, e.y]; },
+  mouseUp: function() { this.dragging = false; },
+  mouseMove: function(e) { 
+    if (this.dragging !== false) {
+      this.x += (e.x - this.dragging[0]);
+      this.y += (e.y - this.dragging[1]);
+      this.dragging = [e.x, e.y];
+    }
+  },
+  ready: function() {
+    this.node = this.firstElementChild;
+    if (this.name == undefined) {
+      this.name = this.node.tagName;
+    }
+    var height = this.getBoundingClientRect().height;
+    var width = this.getBoundingClientRect().width;
+    this.style.lineHeight = height + 'px';
+    outputs = Object.keys(this.node.outputSpec);
+    inputs = Object.keys(this.node.inputSpec);
+    this.inputConnectors = {};
+    for (var i = 0; i < inputs.length; i++) {
+      var connection = document.createElement('div');
+      connection.classList.add('connection');
+      this.$.box.appendChild(connection);
+      connection.style.left = -7 + 'px';
+      connection.style.top = (i + 1) * height / (inputs.length + 1) - 7 + 'px';
+      connection.style.backgroundColor = 'white';
+      this.inputConnectors[inputs[i]] = connection;
+    }
+    this.outputConnectors = {};
+    for (var i = 0; i < outputs.length; i++) {
+      var connection = document.createElement('div');
+      connection.classList.add('connection');
+      this.$.box.appendChild(connection);
+      connection.style.left = width - 7 + 'px';
+      connection.style.top = (i + 1) * height / (outputs.length + 1) - 7 + 'px';
+      connection.style.backgroundColor = 'white';
+      this.outputConnectors[outputs[i]] = connection;
+    }
+
+    if (window.__connectionRegistry !== undefined) {
+      this.registry = __connectionRegistry;
+    } else {
+      this.registry = {keys: [], map: new WeakMap()};
+      __connectionRegistry = this.registry;
+      new ArrayObserver(this.registry.keys).open(function(splices) {
+        splices.forEach(function(splice) {
+          for (var i = 0; i < splice.addedCount; i++) {
+            var update = function() {
+              var key = this.registry.keys[i + splice.index];
+              var obj = this.registry.map.get(key);
+              new ArrayObserver(obj.input).open(
+                function() { this.updateConnection(obj); }.bind(this));
+              new ArrayObserver(obj.output).open(
+                function() { this.updateConnection(obj); }.bind(this));
+              this.updateConnection(obj);
+            }.bind(this);
+            update();
+          }
+        }.bind(this));
+      }.bind(this));
+    }
+
+    for (input in inputs) {
+      if (this.node.inputs[input] !== undefined) {
+        this.inputConnectors[input].style.backgroundColor = 'black';
+        this.updateRegistry(node.inputs[input], input, true);
+      }
+    }
+
+    this.node.addEventListener('inputChanged', function(e) {
+      this.inputConnectors[e.detail.name].style.backgroundColor = 'black';
+      this.updateRegistry(e.detail.pipe, e.detail.name, true);
+    }.bind(this));
+
+    for (output in outputs) {
+      if (this.node.outputs[output] !== undefined) {
+        this.outputConnectors[output].style.backgroundColor = 'black';
+        this.updateRegistry(node.outputs[output], output, false);
+      }
+    }
+
+    this.node.addEventListener('outputChanged', function(e) {
+      this.outputConnectors[e.detail.name].style.backgroundColor = 'black';
+      this.updateRegistry(e.detail.pipe, e.detail.name, false);
+    }.bind(this));
+  },
+  updateRegistry: function(pipe, name, isInput) {
+    if (this.registry.map.get(pipe) !== undefined) {
+      var rec = this.registry.map.get(pipe);
+    } else {
+      var rec = {input: [], output: [], impl: undefined};
+      this.registry.map.set(pipe, rec);
+      this.registry.keys.push(pipe);
+    }
+    if (isInput) {
+      list = rec.input;
+    } else {
+      list = rec.output;
+    }
+    for (var i = 0; i < list.length; i++) {
+      if (list[i].node == this && list[i].name == name) {
+        return;
+      }
+    }
+    list.push({node: this, name: name});
+  },
+  updateConnection: function(spec) {
+    var from = spec.output.length > 0 ? 
+      spec.output[0].node.outputConnectors[spec.output[0].name] : undefined;
+    var to = spec.input.length > 0 ? 
+      spec.input[0].node.inputConnectors[spec.input[0].name] : undefined;
+    if (from == undefined || to == undefined)
+      return;
+    var fromBB = from.getBoundingClientRect();
+    var toBB = to.getBoundingClientRect();
+    var fromCenter = [fromBB.left + fromBB.width / 2, fromBB.top + fromBB.height / 2];
+    var toCenter = [toBB.left + toBB.width / 2, toBB.top + toBB.height / 2];
+    if (spec.impl) {
+      var connector = spec.impl;
+    } else {
+      var connector = new Connector();
+      this.parentElement.appendChild(connector);
+      spec.impl = connector;
+    }
+    connector.startx = fromCenter[0];
+    connector.starty = fromCenter[1];
+    connector.endx = toCenter[0];
+    connector.endy = toCenter[1];
+  }
+});
+</script>
+</polymer-element>
+
+<polymer-element name='pl-html-connector' constructor='Connector' attributes='startx starty endx endy'>
+<template>
+  <style>
+    :host {
+      display: flex;
+      position: absolute;
+    }
+
+    div {
+      flex-grow: 1;
+      height: 0px;
+      border: solid black 1px;
+    }
+  </style>
+  <div></div>
+</template>
+<script>
+Polymer('pl-html-connector', {
+  ready: function() {
+    this.update();
+  },
+  startxChanged: function() {
+    this.update();
+  },
+  startyChanged: function() {
+    this.update();
+  },
+  endxChanged: function() {
+    this.update();
+  },
+  endyChanged: function() {
+    this.update();
+  },
+  update: function() {
+    var length = Math.pow(this.endx - this.startx, 2) + Math.pow(this.endy - this.starty, 2);
+    length = Math.sqrt(length);
+    this.style.width = length + 'px';
+    this.style.webkitTransformOrigin = '0px 0px';
+    this.style.top = this.starty + 'px';
+    this.style.left = this.startx + 'px';
+    var angle = Math.atan2(this.endy - this.starty, this.endx - this.startx)
+    this.style.webkitTransform = 'rotate(' + angle + 'rad)'
+  }
+})
+</script>
+</polymer-element>

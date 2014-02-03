@@ -3,18 +3,48 @@
 <head>
   <script src="components/platform/platform.js"></script>
   <link rel="import" href="elements/pl-push-node.html">
+  <link rel="import" href="elements/pl-html-visualizer.html">
+  <style>
+    #visBox {
+      width: 1000px;
+      height: 1000px;
+      overflow: hidden;
+      background-color: #EFE;
+      -webkit-user-select: none;
+    }
+
+    #visBox pl-html-visualizer {
+      width: 100px;
+      height: 50px;
+      font-size: 10px;
+    }
+  </style>
 </head>
 <body>
-  <pl-timer period='1000'></pl-timer>
-  <pl-passthrough></pl-passthrough>
+<div id='visBox'>
+  <pl-html-visualizer name="timer">
+    <pl-timer period='1000'></pl-timer>
+  </pl-html-visualizer>
+  <pl-html-visualizer x='150' y='30'>
+    <pl-passthrough></pl-passthrough>
+  </pl-html-visualizer>
+  <pl-html-visualizer x='150' y='90'>
+    <pl-timer id='t2' period='500'></pl-timer>
+  </pl-html-visualizer>
+  <pl-html-visualizer x='300' y='60'>
+    <pl-adder></pl-passthrough>
+  </pl-html-visualizer>
+</div>
 </body>
 <script>
-onload = function() {
-var a = document.querySelector('pl-passthrough');
-a.in = createPipe('number');
-a.out = createPipe('number');
-var b = document.querySelector('pl-timer');
-b.time = a.in;
-}
+var passthrough = document.querySelector('pl-passthrough');
+var timer = document.querySelector('pl-timer');
+var timer2 = document.querySelector('#t2');
+var adder = document.querySelector('pl-adder');
+adder.addEventListener('ready', function() {
+  passthrough.in = timer.time;
+  adder.a = passthrough.out;
+  adder.b = timer2.time;
+});
 </script>
 </html>
