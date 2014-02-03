@@ -30,8 +30,8 @@
       position: absolute;
     }
   </style>
-  <div id='box' on-mousedown='{{mouseDown}}' on-mousemove='{{mouseMove}}'
-                on-mouseup='{{mouseUp}}'><div id='name'>{{name}}</div><content/></div>
+  <div id='box' on-pointerdown='{{pointerDown}}' on-pointermove='{{pointerMove}}'
+                on-pointerup='{{pointerUp}}'><div id='name'>{{name}}</div><content/></div>
 </template>
 <script>
 Polymer('pl-html-visualizer', {
@@ -56,14 +56,25 @@ Polymer('pl-html-visualizer', {
     }
   },
   name: undefined,
-  mouseDown: function(e) { this.dragging = [e.x, e.y]; },
-  mouseUp: function() { this.dragging = false; },
-  mouseMove: function(e) { 
-    if (this.dragging !== false) {
-      this.x += (e.x - this.dragging[0]);
-      this.y += (e.y - this.dragging[1]);
-      this.dragging = [e.x, e.y];
+  pointers:{}, 
+  pointerDown: function(e) 
+  { 
+    e.target.setPointerCapture(e.pointerId);
+    this.pointers[e.pointerId] = true;
+    e.preventDefault();
+    this.dragging = [e.x, e.y];
+  },
+  pointerUp: function(e) {
+    this.pointers[e.pointerId] = false;
+    e.target.releasePointerCapture(e.pointerId);
+  },
+  pointerMove: function(e) {
+    if (this.pointers[e.pointerId] !== true) {
+      return; 
     }
+    this.x += (e.x - this.dragging[0]);
+    this.y += (e.y - this.dragging[1]);
+    this.dragging = [e.x, e.y];
   },
   ready: function() {
     this.node = this.firstElementChild;
