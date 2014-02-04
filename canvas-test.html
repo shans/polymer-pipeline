@@ -28,10 +28,10 @@
 <body>
 <div id='visBox'>
   <pl-html-visualizer name="source" x='10' y='10'>
-    <pl-point-source></pl-point-source>
+    <pl-point-source id='source'></pl-point-source>
   </pl-html-visualizer>
   <pl-html-visualizer name="slider" x='10' y='200'>
-    <pl-slider></pl-slider>
+    <pl-slider id='r1'></pl-slider>
     <input type='range'></input>
   </pl-html-visualizer>
   <pl-html-visualizer name="encircle" x='200' y='10'>
@@ -52,30 +52,27 @@
     <pl-encircle id='n3'></pl-encircle>
   </pl-html-visualizer>
   <pl-html-visualizer name="canvas" x='750' y='10' id='phat'>
-    <pl-canvas-sink></pl-canvas-sink>
+    <pl-canvas-sink id='sink'></pl-canvas-sink>
     <canvas width='300px' height='300px' id='output'></canvas>
   </pl-html-visualizer>
 </div>
 </body>
 <script>
-var pointSource = document.querySelector('pl-point-source');
-var canvasSink = document.querySelector('pl-canvas-sink');
-var slider = document.querySelector('pl-slider');
-canvasSink.addEventListener('ready', function() {
+sink.addEventListener('ready', function() {
   setTimeout(function() {
-    canvasSink.context = document.querySelector('#output').getContext('2d');
-    n1.in = pointSource.out;
+    sink.context = document.querySelector('#output').getContext('2d');
+    n1.in = source.out;
     n2.in = n1.out;
     n3.in = n2.out;
-    n1.width = slider.out;
+    n1.width = r1.out;
     n2.width = r2.out;
-    slider.slider = document.querySelector('input');
-    r2.slider = document.querySelector('#r2r');
     n3.width = r3.out;
+    r1.slider = document.querySelector('input');
+    r2.slider = document.querySelector('#r2r');
     r3.slider = document.querySelector('#r3r');
-    canvasSink.in = n3.out;
+    sink.in = n3.out;
     setTimeout(function() {
-      pointSource.points = [{x:100, y:100}, {x:200, y:100}, {x:100, y:200}, 
+      source.points = [{x:100, y:100}, {x:200, y:100}, {x:100, y:200}, 
                             {x:200, y:200}]}, 100);
   }, 100);
 });
