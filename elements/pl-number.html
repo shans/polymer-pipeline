@@ -1,0 +1,27 @@
+<link rel="import" href="pl-push-node.html">
+
+<polymer-element name="pl-slider" extends="pl-push-node" attributes="out slider">
+  <script>
+    Polymer('pl-slider', {
+      ready: function() {
+        this.outputSpec = {'out':'number'};
+        this.super();
+      },
+      slider: undefined,
+      sliderChanged: function() {
+        if (this.slider) {
+          this.slider.addEventListener('change', function() {
+            this.updateOutputs();
+          }.bind(this));
+          this.updateOutputs();
+        }
+      },
+      trigger: function() {
+        if (this.slider) {
+          return this.slider.value;
+        }
+        return 0;
+      },
+    });
+  </script>
+</polymer-element>
