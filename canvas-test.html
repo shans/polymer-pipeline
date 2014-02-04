@@ -35,19 +35,23 @@
     <input type='range'></input>
   </pl-html-visualizer>
   <pl-html-visualizer name="encircle" x='200' y='10'>
-    <pl-encircle></pl-encircle>
+    <pl-encircle id='n1'></pl-encircle>
   </pl-html-visualizer>
   <pl-html-visualizer name="slider" x='200' y='200'>
     <pl-slider id='r2'></pl-slider>
     <input type='range' id='r2r'></input>
   </pl-html-visualizer>
-  <pl-html-visualizer name="encircle" x='350' y='10'>
+  <pl-html-visualizer name="encircle" x='400' y='10'>
     <pl-encircle id='n2'></pl-encircle>
   </pl-html-visualizer>
-  <pl-html-visualizer name="encircle" x='500' y='10'>
+  <pl-html-visualizer name="slider" x='400' y='200'>
+    <pl-slider id='r3'></pl-slider>
+    <input type='range' id='r3r'></input>
+  </pl-html-visualizer>
+  <pl-html-visualizer name="encircle" x='600' y='10'>
     <pl-encircle id='n3'></pl-encircle>
   </pl-html-visualizer>
-  <pl-html-visualizer name="canvas" x='650' y='10' id='phat'>
+  <pl-html-visualizer name="canvas" x='750' y='10' id='phat'>
     <pl-canvas-sink></pl-canvas-sink>
     <canvas width='300px' height='300px' id='output'></canvas>
   </pl-html-visualizer>
@@ -55,23 +59,21 @@
 </body>
 <script>
 var pointSource = document.querySelector('pl-point-source');
-var encircle = document.querySelector('pl-encircle');
-var e2 = document.querySelector('#n2');
-var e3 = document.querySelector('#n3');
 var canvasSink = document.querySelector('pl-canvas-sink');
 var slider = document.querySelector('pl-slider');
-var s2 = document.querySelector('#r2');
 canvasSink.addEventListener('ready', function() {
   setTimeout(function() {
     canvasSink.context = document.querySelector('#output').getContext('2d');
-    encircle.in = pointSource.out;
-    e2.in = encircle.out;
-    e3.in = e2.out;
-    encircle.width = slider.out;
-    e3.width = r2.out;
+    n1.in = pointSource.out;
+    n2.in = n1.out;
+    n3.in = n2.out;
+    n1.width = slider.out;
+    n2.width = r2.out;
     slider.slider = document.querySelector('input');
     r2.slider = document.querySelector('#r2r');
-    canvasSink.in = e3.out;
+    n3.width = r3.out;
+    r3.slider = document.querySelector('#r3r');
+    canvasSink.in = n3.out;
     setTimeout(function() {
       pointSource.points = [{x:100, y:100}, {x:200, y:100}, {x:100, y:200}, 
                             {x:200, y:200}]}, 100);
