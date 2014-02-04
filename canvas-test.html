@@ -62,18 +62,20 @@ var canvasSink = document.querySelector('pl-canvas-sink');
 var slider = document.querySelector('pl-slider');
 var s2 = document.querySelector('#r2');
 canvasSink.addEventListener('ready', function() {
-  canvasSink.context = document.querySelector('#output').getContext('2d');
-  encircle.in = pointSource.out;
-  e2.in = encircle.out;
-  e3.in = e2.out;
-  encircle.width = slider.out;
-  e3.width = r2.out;
-  slider.slider = document.querySelector('input');
-  r2.slider = document.querySelector('#r2r');
-  canvasSink.in = e3.out;
   setTimeout(function() {
-    pointSource.points = [{x:100, y:100}, {x:200, y:100}, {x:100, y:200}, 
-                          {x:200, y:200}]}, 500);
+    canvasSink.context = document.querySelector('#output').getContext('2d');
+    encircle.in = pointSource.out;
+    e2.in = encircle.out;
+    e3.in = e2.out;
+    encircle.width = slider.out;
+    e3.width = r2.out;
+    slider.slider = document.querySelector('input');
+    r2.slider = document.querySelector('#r2r');
+    canvasSink.in = e3.out;
+    setTimeout(function() {
+      pointSource.points = [{x:100, y:100}, {x:200, y:100}, {x:100, y:200}, 
+                            {x:200, y:200}]}, 100);
+  }, 100);
 });
 </script>
 </html>

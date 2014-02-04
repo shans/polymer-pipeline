@@ -10,7 +10,7 @@
       slider: undefined,
       sliderChanged: function() {
         if (this.slider) {
-          this.slider.addEventListener('change', function() {
+          this.slider.addEventListener('input', function() {
             this.updateOutputs();
           }.bind(this));
           this.updateOutputs();

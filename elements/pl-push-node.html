@@ -42,6 +42,7 @@ function createPipe(type) {
               this.state = "ERROR";
               return;
             }
+            console.log(added);
             if (added[property].type != this.inputSpec[property]) {
               this.state = "ERROR";
               return;
