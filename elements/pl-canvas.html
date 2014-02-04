@@ -22,19 +22,23 @@
   <script>
     Polymer('pl-encircle', {
       ready: function() {
-        this.inputSpec = {'in':'pointlist'};
+        this.inputSpec = {'in':'pointlist', 'width':'number', 'num': 'number'};
         this.outputSpec = {'out':'pointlist'};
         this.super();
       },
-      width: 10,
-      num: 20,
-      trigger: function(points) {
+      trigger: function(values) {
         var result = [];
-        points.forEach(function(point) {
-          for (var i = 0; i < this.num; i++) {
+        if (values.width == undefined) {
+          values.width = 10;
+        }
+        if (values.num == undefined) {
+          values.num = 20;
+        }
+        values.in.forEach(function(point) {
+          for (var i = 0; i < values.num; i++) {
             result.push(
-              {x: point.x + this.width * Math.sin(2*Math.PI * i / this.num),
-               y: point.y + this.width * Math.cos(2*Math.PI * i / this.num)});
+              {x: point.x + values.width * Math.sin(2*Math.PI * i / values.num),
+               y: point.y + values.width * Math.cos(2*Math.PI * i / values.num)});
           }
         }.bind(this));
         return result;

@@ -7,7 +7,7 @@ var types = {
 }
 
 function createPipe(type) {
-  return {type: type, state: 'ready', initial: types[type].initial};
+  return {type: type, state: 'ready', value: types[type].initial};
 }
 </script>
 
@@ -73,15 +73,21 @@ function createPipe(type) {
       },
       state: "OK",
       updateOutputs: function() {
-        var inputs = Object.keys(this.inputs);
+        var inputs = Object.keys(this.inputSpec);
         if (inputs.length == 0) {
           result = this.trigger();
         } else if (inputs.length == 1) {
-          result = this.trigger(this.inputs[inputs[0]].value);
+          if (this.inputs[inputs[0]] !== undefined) {
+            result = this.trigger(this.inputs[inputs[0]].value);
+          } else {
+            result = this.trigger(undefined);
+          }
         } else {
           var iObj = {}
           for (var i = 0; i < inputs.length; i++) {
-            iObj[inputs[i]] = this.inputs[inputs[i]].value;
+            if (this.inputs[inputs[i]] !== undefined) {
+              iObj[inputs[i]] = this.inputs[inputs[i]].value;
+            }
             result = this.trigger(iObj);
           }
         }

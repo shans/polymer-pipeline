@@ -22,13 +22,16 @@
 </head>
 <body>
 <div id='visBox'>
-  <pl-html-visualizer name="source">
+  <pl-html-visualizer name="source" x='10' y='10'>
     <pl-point-source></pl-point-source>
   </pl-html-visualizer>
-  <pl-html-visualizer name="encircle">
+  <pl-html-visualizer name="encircle" x='150' y='10'>
     <pl-encircle></pl-encircle>
   </pl-html-visualizer>
-  <pl-html-visualizer name="canvas">
+  <pl-html-visualizer name="encircle" x='150' y='10'>
+    <pl-encircle id='n2' width='20' num='10'></pl-encircle>
+  </pl-html-visualizer>
+  <pl-html-visualizer name="canvas" x='290' y='10'>
     <pl-canvas-sink></pl-canvas-sink>
   </pl-html-visualizer>
 </div>
@@ -37,11 +40,13 @@
 <script>
 var pointSource = document.querySelector('pl-point-source');
 var encircle = document.querySelector('pl-encircle');
+var e2 = document.querySelector('#n2');
 var canvasSink = document.querySelector('pl-canvas-sink');
 canvasSink.addEventListener('ready', function() {
-  canvasSink.context = output.getContext('2d');
+  canvasSink.context = document.querySelector('#output').getContext('2d');
   encircle.in = pointSource.out;
-  canvasSink.in = encircle.out;
+  e2.in = encircle.out;
+  canvasSink.in = e2.out;
   setTimeout(function() {
     pointSource.points = [{x:100, y:100}, {x:200, y:100}, {x:100, y:200}, 
                           {x:200, y:200}]}, 500);
