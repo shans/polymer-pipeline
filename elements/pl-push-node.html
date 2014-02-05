@@ -42,7 +42,6 @@ function createPipe(type) {
               this.state = "ERROR";
               return;
             }
-            console.log(added);
             if (added[property].type != this.inputSpec[property]) {
               this.state = "ERROR";
               return;
@@ -50,12 +49,12 @@ function createPipe(type) {
             new PathObserver(this.inputs[property], 'value').open(function(newValue, oldValue) {
               this.updateOutputs();
             }.bind(this));
+            this.updateOutputs();
             this.fire('inputChanged', {name: property, pipe: added[property]});
           }.bind(this));
         }.bind(this));
         // watch registered attributes
         Object.keys(this.publish).forEach(function(attribute) {
-          console.log(this.inputSpec, this.outputSpec, attribute);
           if (this.inputSpec[attribute] !== undefined) {
             var value = this.inputs;
           } else if (this.outputSpec[attribute] !== undefined) {
@@ -90,10 +89,10 @@ function createPipe(type) {
               iObj[inputs[i]] = this.inputs[inputs[i]].value;
             }
             result = this.trigger(iObj);
+            this.resultCache = result;
           }
         }
-        var outputs = Object.keys(this.outputs);
-        console.log(outputs, result);
+        var outputs = Object.keys(this.outputSpec);
         if (outputs.length == 0) {
           return;
         } else if (outputs.length == 1) {

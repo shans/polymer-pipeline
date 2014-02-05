@@ -6,13 +6,10 @@
       ready: function() {
         this.outputSpec = {'out':'number'};
         this.super();
-        console.log(this.slider, '<--');
       },
       slider: undefined,
       sliderChanged: function() {
-        console.log('bip');
         if (this.slider) {
-          console.log(this.slider);
           this.slider.addEventListener('input', function() {
             this.updateOutputs();
           }.bind(this));

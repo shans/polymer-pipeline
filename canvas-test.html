@@ -12,7 +12,7 @@
 <style>
   #visBox {
     width: 1400px;
-    height: 1000px;
+    height: 500px;
     overflow: hidden;
     background-color: #EFE;
     -webkit-user-select: none;
@@ -63,7 +63,6 @@
 Polymer('pl-canvas-test', {
   ready: function() {
     this.context = this.$.output.getContext('2d');
-    console.log(this.$.r1r);
     this.r1r = this.$.r1r;
     this.r2r = this.$.r2r;
     this.r3r = this.$.r3r;
