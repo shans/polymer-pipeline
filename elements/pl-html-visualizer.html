@@ -12,6 +12,8 @@
       min-width: 90px; /* FIXME */
       position: absolute;
       border: 1px solid black;
+      border-radius: 5px;
+      box-shadow: 2px 2px 2px 0px rgba(0,0,0,0.3);
       font-size: 12px;
       text-align: center;
       white-space: nowrap;
@@ -42,14 +44,18 @@ Polymer('pl-html-visualizer', {
   x: 0,
   xChanged: function() {
     this.$.box.style.left = this.x + 'px';
-    this._updateCon(this.inputConnectors, this.node.inputs);
-    this._updateCon(this.outputConnectors, this.node.outputs);
+    if (this.node) {
+      this._updateCon(this.inputConnectors, this.node.inputs);
+      this._updateCon(this.outputConnectors, this.node.outputs);
+    }
   },
   y: 0,
   yChanged: function() {
     this.$.box.style.top = this.y + 'px';
-    this._updateCon(this.inputConnectors, this.node.inputs);
-    this._updateCon(this.outputConnectors, this.node.outputs);
+    if (this.node) {
+      this._updateCon(this.inputConnectors, this.node.inputs);
+      this._updateCon(this.outputConnectors, this.node.outputs);
+    }
   },
   _updateCon: function(clist, nlist) {
     for (var cname in clist) {
@@ -79,14 +85,21 @@ Polymer('pl-html-visualizer', {
   },
   pointerMove: function(e) {
     if (this.pointers[e.pointerId] !== true) {
-      return; 
+      return;
     }
     this.x += (e.x - this.dragging[0]);
     this.y += (e.y - this.dragging[1]);
     this.dragging = [e.x, e.y];
   },
+  firstElementChildChanged: function() {
+    this.ready();
+  },
   ready: function() {
     this.node = this.firstElementChild;
+    if (this.node == undefined) {
+      return;
+    }
+
     if (this.name == undefined) {
       this.name = this.node.tagName;
     }

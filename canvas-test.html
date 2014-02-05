@@ -5,76 +5,82 @@
   <link rel="import" href="elements/pl-canvas.html">
   <link rel="import" href="elements/pl-number.html">
   <link rel="import" href="elements/pl-html-visualizer.html">
-  <style>
-    #visBox {
-      width: 1400px;
-      height: 1000px;
-      overflow: hidden;
-      background-color: #EFE;
-      -webkit-user-select: none;
-    }
-
-    #visBox pl-html-visualizer {
-      width: 100px;
-      height: 50px;
-      font-size: 10px;
-    }
-
-    #phat {
-      width: 300px;
-    }
-  </style>
 </head>
 <body>
+<polymer-element name='pl-canvas-test'>
+<template>
+<style>
+  #visBox {
+    width: 1400px;
+    height: 1000px;
+    overflow: hidden;
+    background-color: #EFE;
+    -webkit-user-select: none;
+  }
+
+  #visBox pl-html-visualizer {
+    width: 100px;
+    height: 50px;
+    font-size: 10px;
+  }
+
+  #phat {
+    width: 300px;
+  }
+</style>
 <div id='visBox'>
   <pl-html-visualizer name="source" x='10' y='10'>
-    <pl-point-source id='source'></pl-point-source>
+    <pl-point-source id='source' out={{a}} points={{points}}></pl-point-source>
   </pl-html-visualizer>
   <pl-html-visualizer name="slider" x='10' y='200'>
-    <pl-slider id='r1'></pl-slider>
-    <input type='range'></input>
+    <pl-slider id='r1' out={{s1}} slider={{r1r}}></pl-slider>
+    <input type='range' id='r1r'></input>
   </pl-html-visualizer>
   <pl-html-visualizer name="encircle" x='200' y='10'>
-    <pl-encircle id='n1'></pl-encircle>
+    <pl-encircle id='n1' in={{a}} out={{b}} width={{s1}}></pl-encircle>
   </pl-html-visualizer>
   <pl-html-visualizer name="slider" x='200' y='200'>
-    <pl-slider id='r2'></pl-slider>
+    <pl-slider id='r2' out={{s2}} slider={{r2r}}></pl-slider>
     <input type='range' id='r2r'></input>
   </pl-html-visualizer>
   <pl-html-visualizer name="encircle" x='400' y='10'>
-    <pl-encircle id='n2'></pl-encircle>
+    <pl-encircle id='n2' in={{b}} out={{c}} width={{s2}}></pl-encircle>
   </pl-html-visualizer>
   <pl-html-visualizer name="slider" x='400' y='200'>
-    <pl-slider id='r3'></pl-slider>
+    <pl-slider id='r3' out={{s3}} slider={{r3r}}></pl-slider>
     <input type='range' id='r3r'></input>
   </pl-html-visualizer>
   <pl-html-visualizer name="encircle" x='600' y='10'>
-    <pl-encircle id='n3'></pl-encircle>
+    <pl-encircle id='n3' in={{c}} out={{d}} width={{s3}}></pl-encircle>
   </pl-html-visualizer>
   <pl-html-visualizer name="canvas" x='750' y='10' id='phat'>
-    <pl-canvas-sink id='sink'></pl-canvas-sink>
+    <pl-canvas-sink id='sink' in={{d}} context={{context}}></pl-canvas-sink>
     <canvas width='300px' height='300px' id='output'></canvas>
   </pl-html-visualizer>
 </div>
+</template>
+<script>
+Polymer('pl-canvas-test', {
+  ready: function() {
+    this.context = this.$.output.getContext('2d');
+    console.log(this.$.r1r);
+    this.r1r = this.$.r1r;
+    this.r2r = this.$.r2r;
+    this.r3r = this.$.r3r;
+    this.fire('ready');
+  }
+});
+</script>
+</polymer-element>
+
+<pl-canvas-test id='test'></pl-canvas-test>
+
 </body>
 <script>
-sink.addEventListener('ready', function() {
-  setTimeout(function() {
-    sink.context = document.querySelector('#output').getContext('2d');
-    n1.in = source.out;
-    n2.in = n1.out;
-    n3.in = n2.out;
-    n1.width = r1.out;
-    n2.width = r2.out;
-    n3.width = r3.out;
-    r1.slider = document.querySelector('input');
-    r2.slider = document.querySelector('#r2r');
-    r3.slider = document.querySelector('#r3r');
-    sink.in = n3.out;
-    setTimeout(function() {
-      source.points = [{x:100, y:100}, {x:200, y:100}, {x:100, y:200}, 
-                            {x:200, y:200}]}, 100);
-  }, 100);
-});
+
+test.addEventListener('ready', function() {
+  test.points = [{x:100, y:100}, {x:200, y:100}, {x:100, y:200},
+                            {x:200, y:200}]});
+
 </script>
 </html>
