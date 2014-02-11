@@ -1,5 +1,25 @@
 <link rel="import" href="../components/polymer/polymer.html">
 
+<polymer-element name="pl-pipe" attributes='type state value' constructor='Pipe'>
+  <script>
+    Polymer('pl-pipe', {
+      consumers: undefined,
+      ready: function() {
+        this.consumers = [];
+      },
+      update: function(value) {
+        this.value = value;
+        this.consumers.forEach(function(consumer) { consumer.updateOutputs() });
+      },
+      registerConsumer: function(consumer) {
+        if (this.consumers.indexOf(consumer) == -1) {
+          this.consumers.push(consumer);
+        }
+      }
+    });
+  </script>
+</polymer-element>
+
 <script>
 var types = {
   "number" : { initial: undefined },
@@ -7,7 +27,11 @@ var types = {
 }
 
 function createPipe(type) {
-  return {type: type, state: 'ready', value: types[type].initial};
+  var pipe = new Pipe();
+  pipe.type = type;
+  pipe.state = 'ready';
+  pipe.value = types[type].initial;
+  return pipe;
 }
 </script>
 
@@ -50,9 +74,10 @@ function createPipe(type) {
               this.fire('inputChanged', {name: property, pipe: added[property]});
               return;
             }
-            new PathObserver(this.inputs[property], 'value').open(function(newValue, oldValue) {
-              this.updateOutputs();
-            }.bind(this));
+            //new PathObserver(this.inputs[property], 'value').open(function(newValue, oldValue) {
+              //this.updateOutputs();
+            //}.bind(this));
+            this.inputs[property].registerConsumer(this);
             this.updateOutputs();
             this.fire('inputChanged', {name: property, pipe: added[property]});
           }.bind(this));
@@ -100,17 +125,17 @@ function createPipe(type) {
               iObj[inputs[i]] = this.inputs[inputs[i]].value;
             }
             result = this.trigger(iObj);
-            this.resultCache = result;
           }
         }
+        this.resultCache = result;
         var outputs = Object.keys(this.outputSpec);
         if (outputs.length == 0) {
           return;
         } else if (outputs.length == 1) {
-          this.outputs[outputs[0]].value = result;
+          this.outputs[outputs[0]].update(result);
         } else {
           for (var output in result) {
-            this.outputs[output].value = result[output];
+            this.outputs[output].update(this.resultCache[output]);
           }
         }
       },
