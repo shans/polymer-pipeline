@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <script src="components/platform/platform.js"></script>
+  <link rel="import" href="elements/pl-canvas.html">
+  <link rel="import" href="elements/pl-number.html">
+  <link rel="import" href="elements/pl-html-visualizer.html">
+</head>
+<body>
+<polymer-element name='pl-canvas-test'>
+<template>
+<style>
+  #visBox {
+    width: 1400px;
+    height: 500px;
+    overflow: hidden;
+    background-color: #EFE;
+    -webkit-user-select: none;
+  }
+
+  #visBox pl-html-visualizer {
+    width: 100px;
+    height: 50px;
+    font-size: 10px;
+  }
+
+  #phat {
+    width: 300px;
+  }
+</style>
+<div id='visBox'>
+  <pl-html-visualizer name="source" x='10' y='10'>
+    <pl-timer id='timer' time={{a}} period=10></pl-timer>
+  </pl-html-visualizer>
+  <pl-html-visualizer name="div" x='140' y='10'>
+    <pl-div id='div' dividend={{a}} divisor=100 out={{aa}}></pl-div>
+  </pl-html-visualizer>
+  <pl-html-visualizer name="tee" x='290' y='10'>
+    <pl-tee id=tee' in={{aa}} outa={{b}} outb={{c}}></pl-tee>
+  </pl-html-visualizer>
+  <pl-html-visualizer name="generator" x='430' y='10'>
+    <pl-point-gen id='gen' x={{b}} y={{c}} point={{d}}></pl-point-gen>
+  </pl-html-visualizer>
+  <pl-html-visualizer name="circler" x='570' y='10'>
+    <pl-encircle id='encircle' in={{d}} out={{dd}} width=10 num=20></pl-encircle>
+  </pl-html-visualizer>
+  <pl-html-visualizer name="canvas" x='750' y='10' id='phat'>
+    <pl-canvas-sink id='sink' in={{dd}} context={{context}}></pl-canvas-sink>
+    <canvas width='300px' height='300px' id='output'></canvas>
+  </pl-html-visualizer>
+</div>
+</template>
+<script>
+Polymer('pl-canvas-test', {
+  ready: function() {
+    this.context = this.$.output.getContext('2d');
+    this.fire('ready');
+  }
+});
+</script>
+</polymer-element>
+
+<pl-canvas-test id='test'></pl-canvas-test>
+
+</body>
+</html>

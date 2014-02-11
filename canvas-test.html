@@ -37,21 +37,21 @@
     <input type='range' id='r1r'></input>
   </pl-html-visualizer>
   <pl-html-visualizer name="encircle" x='200' y='10'>
-    <pl-encircle id='n1' in={{a}} out={{b}} width={{s1}}></pl-encircle>
+    <pl-encircle id='n1' in={{a}} out={{b}} width={{s1}} num=10></pl-encircle>
   </pl-html-visualizer>
   <pl-html-visualizer name="slider" x='200' y='200'>
     <pl-slider id='r2' out={{s2}} slider={{r2r}}></pl-slider>
     <input type='range' id='r2r'></input>
   </pl-html-visualizer>
   <pl-html-visualizer name="encircle" x='400' y='10'>
-    <pl-encircle id='n2' in={{b}} out={{c}} width={{s2}}></pl-encircle>
+    <pl-encircle id='n2' in={{b}} out={{c}} width={{s2}} num=20></pl-encircle>
   </pl-html-visualizer>
   <pl-html-visualizer name="slider" x='400' y='200'>
     <pl-slider id='r3' out={{s3}} slider={{r3r}}></pl-slider>
     <input type='range' id='r3r'></input>
   </pl-html-visualizer>
   <pl-html-visualizer name="encircle" x='600' y='10'>
-    <pl-encircle id='n3' in={{c}} out={{d}} width={{s3}}></pl-encircle>
+    <pl-encircle id='n3' in={{c}} out={{d}} width={{s3}} num=10></pl-encircle>
   </pl-html-visualizer>
   <pl-html-visualizer name="canvas" x='750' y='10' id='phat'>
     <pl-canvas-sink id='sink' in={{d}} context={{context}}></pl-canvas-sink>

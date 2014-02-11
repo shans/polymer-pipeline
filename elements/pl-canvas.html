@@ -28,12 +28,6 @@
       },
       trigger: function(values) {
         var result = [];
-        if (values.width == undefined) {
-          values.width = 10;
-        }
-        if (values.num == undefined) {
-          values.num = 20;
-        }
         values.in.forEach(function(point) {
           for (var i = 0; i < values.num; i++) {
             result.push(
@@ -57,7 +51,7 @@
       context: undefined,
       trigger: function(points) {
         this.context.clearRect(0, 0, 300, 300);
-        if (this.context) {
+        if (this.context && points) {
           points.forEach(function(point) {
             this.context.fillRect(point.x, point.y, 1, 1);
           }.bind(this));
@@ -66,3 +60,20 @@
     });
   </script>
 </polymer-element>
+
+<polymer-element name="pl-point-gen" extends="pl-push-node" attributes='x y point'>
+  <script>
+    Polymer('pl-point-gen', {
+      ready: function() {
+        this.inputSpec = {'x':'number', 'y': 'number'};
+        this.outputSpec = {'point': 'pointlist'};
+        this.super();
+      },
+      trigger: function(inp) {
+        return [inp];
+      }
+    });
+  </script>
+</polymer-element>
+
+

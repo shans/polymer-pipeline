@@ -46,6 +46,10 @@ function createPipe(type) {
               this.state = "ERROR";
               return;
             }
+            if (added[property].default) {
+              this.fire('inputChanged', {name: property, pipe: added[property]});
+              return;
+            }
             new PathObserver(this.inputs[property], 'value').open(function(newValue, oldValue) {
               this.updateOutputs();
             }.bind(this));
@@ -57,6 +61,13 @@ function createPipe(type) {
         Object.keys(this.publish).forEach(function(attribute) {
           if (this.inputSpec[attribute] !== undefined) {
             var value = this.inputs;
+            if (this[attribute] !== null) {
+              var defaultValue = this[attribute];
+              this[attribute] = createPipe(this.inputSpec[attribute]);
+              this[attribute].default = true;
+              this[attribute].value = defaultValue;
+              value[attribute] = this[attribute];
+            }
           } else if (this.outputSpec[attribute] !== undefined) {
             var value = this.outputs;
             this[attribute] = createPipe(this.outputSpec[attribute]);
@@ -98,7 +109,7 @@ function createPipe(type) {
         } else if (outputs.length == 1) {
           this.outputs[outputs[0]].value = result;
         } else {
-          for (var output in Object.keys(result)) {
+          for (var output in result) {
             this.outputs[output].value = result[output];
           }
         }
@@ -151,6 +162,21 @@ function createPipe(type) {
       },
       trigger: function(inp) {
         return inp.a + inp.b;
+      }
+    });
+  </script>
+</polymer-element>
+
+<polymer-element name="pl-tee" extends="pl-push-node" attributes='in outa outb'>
+  <script>
+    Polymer('pl-tee', {
+      ready: function() {
+        this.inputSpec = {'in': 'number'};
+        this.outputSpec = {'outa': 'number', 'outb': 'number'};
+        this.super();
+      },
+      trigger: function(inp) {
+        return {outa: inp, outb: inp};
       }
     });
   </script>

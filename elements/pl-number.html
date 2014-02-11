@@ -25,3 +25,19 @@
     });
   </script>
 </polymer-element>
+
+<polymer-element name="pl-div" extends="pl-push-node" attributes="dividend divisor out">
+  <script>
+    Polymer('pl-div', {
+      ready: function() {
+	this.inputSpec = {'dividend': 'number', 'divisor': 'number'};
+	this.outputSpec = {'out': 'number'};
+	this.super();
+      },
+      trigger: function(inp) {
+	return inp.dividend / inp.divisor;
+      }
+    });
+  </script>
+</polymer-element>
+      
