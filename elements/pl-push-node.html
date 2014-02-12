@@ -96,7 +96,7 @@ function matchesType(type, spec) {
           Object.keys(changed).forEach(function(property) {
             this.removeConnection(property, getOldValueFn(property), true, changed[property] == undefined);
             if (changed[property] !== undefined) {
-              this.addConnection(property, changed[property], true);
+              this.addConnection(property, changed[property], true, getOldValueFn(property));
             }
           }.bind(this));
         }.bind(this));

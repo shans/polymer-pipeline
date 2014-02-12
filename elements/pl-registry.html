@@ -68,10 +68,11 @@ Polymer('pl-registry', {
       this.register(element.outputs[output], element, output, false);
     }
     element.addEventListener('inputChanged', function(e) {
+      if (e.detail.oldPipe !== undefined) {
+        this.deregister(e.detail.oldPipe, element, e.detail.name, true);
+      }
       if (e.detail.pipe !== undefined) {
         this.register(e.detail.pipe, element, e.detail.name, true);
-      } else {
-        this.deregister(e.detail.oldPipe, element, e.detail.name, true);
       }
     }.bind(this));
     element.addEventListener('outputChanged', function(e) {
