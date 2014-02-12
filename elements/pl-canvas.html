@@ -24,6 +24,7 @@
       ready: function() {
         this.inputSpec = {'in':'pointlist', 'width':'number', 'num': 'number'};
         this.outputSpec = {'out':'pointlist'};
+        this.defaults = {'width': 20, 'num': 20};
         this.super();
       },
       trigger: function(values) {

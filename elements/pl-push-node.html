@@ -78,6 +78,7 @@ function matchesType(type, spec) {
       ready: function() {
         if (this.inputSpec == undefined) { this.inputSpec = {}; }
         if (this.outputSpec == undefined) { this.outputSpec = {}; }
+        if (this.defaults == undefined) { this.defaults = {}; }
         this.inputs = {};
         this.outputs = {};
         this.outputsObserver = new ObjectObserver(this.outputs);
@@ -104,8 +105,11 @@ function matchesType(type, spec) {
         Object.keys(this.publish).forEach(function(attribute) {
           if (this.inputSpec[attribute] !== undefined) {
             var value = this.inputs;
-            if (this[attribute] !== null) {
+            if (this[attribute] !== null || this.defaults[attribute] !== null) {
               var defaultValue = this[attribute];
+              if (defaultValue == null) {
+                defaultValue = this.defaults[attribute];
+              }
               this[attribute] = createPipe(this.inputSpec[attribute]);
               this[attribute].default = true;
               this[attribute].value = defaultValue;
