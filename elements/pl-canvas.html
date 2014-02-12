@@ -50,7 +50,7 @@
       },
       context: undefined,
       trigger: function(input) {
-        if (!this.context) {
+        if (!this.context || input == undefined) {
           return;
         }
         if (input == 'clear') {

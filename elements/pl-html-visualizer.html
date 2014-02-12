@@ -148,13 +148,6 @@ Polymer('pl-html-visualizer', {
       connection.state = 'disconnected';
       connection.name = outputs[i];
       this.outputConnectors[outputs[i]] = connection;
-      connection.addEventListener('click', function(e) {
-        var pipe = this.node.outputs[e.target.name];
-        this.registry.getOutputs(pipe).forEach(function(output) {
-          output.element.inputs[output.name] = undefined;
-        });
-        e.preventDefault();
-      }.bind(this));
       connection.addEventListener('pointerdown', function(e) {
         e.stopPropagation();
         e.target.setPointerCapture(e.pointerId);
@@ -165,7 +158,14 @@ Polymer('pl-html-visualizer', {
         e.target.releasePointerCapture(e.pointerId);
         this.connectionTarget = false;
         var newTarget = this.connectorAtPoint(e.x, e.y);
-        this.registry.getOutputs(this.node.outputs[e.target.name]).splice(0, 1);
+        var outputs = this.registry.getOutputs(this.node.outputs[e.target.name]);
+        if (outputs.length > 0 && outputs[0].fake) {
+          outputs.splice(0, 1);
+        } else {
+          outputs.forEach(function(output) {
+            output.element.inputs[output.name] = undefined;
+          });
+        }
         if (newTarget !== undefined) {
           newTarget.element.inputs[newTarget.input] = this.node.outputs[e.target.name];
         }
