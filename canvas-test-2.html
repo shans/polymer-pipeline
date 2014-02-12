@@ -32,8 +32,14 @@
   <pl-html-visualizer name="source" x='10' y='10'>
     <pl-timer id='timer' time={{a}} period=10></pl-timer>
   </pl-html-visualizer>
+  <pl-html-visualizer name='tee' x='140' y='100'>
+    <pl-tee id='timertee' in={{a}} outa={{aaa}} outb={{e}}></pl-tee>
+  </pl-html-visualizer>
   <pl-html-visualizer name="div" x='140' y='10'>
-    <pl-div id='div' dividend={{a}} divisor=100 out={{aa}}></pl-div>
+    <pl-div id='div' dividend={{aaa}} divisor=100 out={{aa}}></pl-div>
+  </pl-html-visualizer>
+  <pl-html-visualizer name="div" x=290' y='100'>
+    <pl-div id='div' dividend={{e}} divisor=50 out={{f}}></pl-div>
   </pl-html-visualizer>
   <pl-html-visualizer name="tee" x='290' y='10'>
     <pl-tee id=tee' in={{aa}} outa={{b}} outb={{c}}></pl-tee>
@@ -41,11 +47,20 @@
   <pl-html-visualizer name="generator" x='430' y='10'>
     <pl-point-gen id='gen' x={{b}} y={{c}} point={{d}}></pl-point-gen>
   </pl-html-visualizer>
+  <pl-html-visualizer name='mod' x='430' y='100'>
+    <pl-mod id='mod' modend={{f}} modor=20 out={{g}}></pl-mod>
+  </pl-html-visualizer>
   <pl-html-visualizer name="circler" x='570' y='10'>
-    <pl-encircle id='encircle' in={{d}} out={{dd}} width=10 num=20></pl-encircle>
+    <pl-encircle id='encircle' in={{d}} out={{dd}} width={{g}} num=20></pl-encircle>
+  </pl-html-visualizer>
+  <pl-html-visualizer name='modpoints' x='570' y='100'>
+    <pl-mod-points id='modpoints' in={{dd}} out={{h}} width=300 height=300></pl-mod-points>
+  </pl-html-visualizer>
+  <pl-html-visualizer name='clear first' x='570' y='200'>
+    <pl-clear-before id='clear' in={{h}} out={{i}}></pl-clear-before>
   </pl-html-visualizer>
   <pl-html-visualizer name="canvas" x='750' y='10' id='phat'>
-    <pl-canvas-sink id='sink' in={{dd}} context={{context}}></pl-canvas-sink>
+    <pl-canvas-sink id='sink' in={{i}} context={{context}}></pl-canvas-sink>
     <canvas width='300px' height='300px' id='output'></canvas>
   </pl-html-visualizer>
 </div>

@@ -40,4 +40,18 @@
     });
   </script>
 </polymer-element>
-      
+
+<polymer-element name="pl-mod" extends="pl-push-node" attributes="modend modor out">
+  <script>
+    Polymer('pl-mod', {
+      ready: function() {
+	this.inputSpec = {'modend': 'number', 'modor': 'number'};
+	this.outputSpec = {'out': 'number'};
+	this.super();
+      },
+      trigger: function(inp) {
+	return inp.modend % inp.modor;
+      }
+    });
+  </script>
+</polymer-element>

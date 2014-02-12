@@ -15,6 +15,12 @@
         if (this.consumers.indexOf(consumer) == -1) {
           this.consumers.push(consumer);
         }
+      },
+      deregisterConsumer: function(consumer) {
+        var i = this.consumers.indexOf(consumer);
+        if (i > -1) {
+          this.consumers.splice(i, 1);
+        }
       }
     });
   </script>
@@ -22,8 +28,10 @@
 
 <script>
 var types = {
-  "number" : { initial: undefined },
-  "pointlist" : { initial: [] }
+  "number" : { kind: '*', initial: undefined },
+  "pointlist" : { kind: '*', initial: [] },
+  "canvascommand" : { kind: '*', initial: undefined },
+  "canvas" : { kind: {'or': ['pointlist', 'canvascommand']}, initial: [] }
 }
 
 function createPipe(type) {
@@ -32,6 +40,35 @@ function createPipe(type) {
   pipe.state = 'ready';
   pipe.value = types[type].initial;
   return pipe;
+}
+
+function isType(type) {
+  return types[type] !== undefined;
+}
+
+function isPrimitiveType(type) {
+  return types[type].kind == '*';
+}
+
+function isUnionType(type) {
+  return types[type].kind.or !== undefined;
+}
+
+function unionTypeContains(type, subtype) {
+  return types[type].kind.or.indexOf(subtype) > -1;
+}
+
+function matchesType(type, spec) {
+  if (!isType(type) || !isType(spec)) {
+    return false;
+  }
+  if (type == spec) {
+    return true;
+  }
+  if (isPrimitiveType(type) && isUnionType(spec) && unionTypeContains(spec, type)) {
+    return true;
+  }
+  return false;
 }
 </script>
 
@@ -47,39 +84,20 @@ function createPipe(type) {
         // observe changes in output pipes
         this.outputsObserver.open(function(added, removed, changed, getOldValueFn) {
           Object.keys(added).forEach(function(property) {
-            if (this.outputSpec[property] == undefined) {
-              this.state = "ERROR";
-              return;
-            }
-            if (added[property].type != this.outputSpec[property]) {
-              this.state = "ERROR";
-              return;
-            }
-            this.fire('outputChanged', {name: property, pipe: added[property]});
+            this.addConnection(property, added[property], false);
           }.bind(this));
         }.bind(this));
         this.inputsObserver = new ObjectObserver(this.inputs);
         // observe changes in input pipes
         this.inputsObserver.open(function(added, removed, changed, getOldValueFn) {
           Object.keys(added).forEach(function(property) {
-            if (this.inputSpec[property] == undefined) {
-              this.state = "ERROR";
-              return;
+            this.addConnection(property, added[property], true);
+          }.bind(this));
+          Object.keys(changed).forEach(function(property) {
+            this.removeConnection(property, getOldValueFn(property), true, changed[property] == undefined);
+            if (changed[property] !== undefined) {
+              this.addConnection(property, changed[property], true);
             }
-            if (added[property].type != this.inputSpec[property]) {
-              this.state = "ERROR";
-              return;
-            }
-            if (added[property].default) {
-              this.fire('inputChanged', {name: property, pipe: added[property]});
-              return;
-            }
-            //new PathObserver(this.inputs[property], 'value').open(function(newValue, oldValue) {
-              //this.updateOutputs();
-            //}.bind(this));
-            this.inputs[property].registerConsumer(this);
-            this.updateOutputs();
-            this.fire('inputChanged', {name: property, pipe: added[property]});
           }.bind(this));
         }.bind(this));
         // watch registered attributes
@@ -108,6 +126,31 @@ function createPipe(type) {
         this.fire('ready');
       },
       state: "OK",
+      addConnection: function(name, connection, isInput, oldPipe) {
+        var spec = isInput ? this.inputSpec : this.outputSpec;
+        spec = spec[name];
+        if (spec == undefined || !matchesType(connection.type, spec)) {
+          this.state = "ERROR";
+          return;
+        }
+        this.fire(isInput ? 'inputChanged' : 'outputChanged', {name: name, pipe: connection, oldPipe: oldPipe});
+        if (connection.default) {
+          return;
+        }
+        if (isInput) {
+          connection.registerConsumer(this);
+          this.updateOutputs();
+        }
+      },
+      removeConnection: function(name, connection, isInput, fireEvent) {
+        if (connection) {
+          connection.deregisterConsumer(this);
+          this.updateOutputs();
+        }
+        if (fireEvent) {
+          this.fire(isInput ? 'inputChanged' : 'outputChanged', {name: name, pipe: undefined, oldPipe: connection});
+        }
+      },
       updateOutputs: function() {
         var inputs = Object.keys(this.inputSpec);
         if (inputs.length == 0) {
@@ -127,6 +170,9 @@ function createPipe(type) {
             result = this.trigger(iObj);
           }
         }
+        this.sendOutput(result);
+      },
+      sendOutput: function(result) {
         this.resultCache = result;
         var outputs = Object.keys(this.outputSpec);
         if (outputs.length == 0) {

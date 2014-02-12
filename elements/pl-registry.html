@@ -5,6 +5,7 @@
 Polymer('pl-registry', {
   // Registry keys are connections.
   keys: [],
+  elements: [],
   // Registry map entries list connection inputs and outputs.
   map: new WeakMap(),  
   ready: function() {
@@ -27,7 +28,7 @@ Polymer('pl-registry', {
       }.bind(this));
     }.bind(this));
   },
-  _update: function(pipe, element, name, isInput) {
+  register: function(pipe, element, name, isInput) {
     if (this.map.get(pipe) !== undefined) {
       var rec = this.map.get(pipe);
     } else {
@@ -49,24 +50,48 @@ Polymer('pl-registry', {
     list.push(newEntry);
     return newEntry;
   },
-  registerInput: function(pipe, element, name) { return this._update(pipe, element, name, true); },
-  registerOutput: function(pipe, element, name) { return this._update(pipe, element, name, false); },
+  deregister: function(pipe, element, name, isInput) {
+    var rec = this.map.get(pipe);
+    var list = isInput ? rec.input : rec.output;
+    for (var i = 0; i < list.length; i++) {
+      if (list[i].element == element && list[i].name == name) {
+        list.splice(i, 1);
+        return;
+      }
+    }
+  },
   addElement: function(element) {
     for (input in element.inputs) {
-      this.registerInput(element.inputs[input], element, input);
+      this.register(element.inputs[input], element, input, true);
     }
     for (output in element.outputs) {
-      this.registerOutput(element.outputs[output], element, output);
+      this.register(element.outputs[output], element, output, false);
     }
     element.addEventListener('inputChanged', function(e) {
-      this.registerInput(e.detail.pipe, element, e.detail.name);
+      if (e.detail.pipe !== undefined) {
+        this.register(e.detail.pipe, element, e.detail.name, true);
+      } else {
+        this.deregister(e.detail.oldPipe, element, e.detail.name, true);
+      }
     }.bind(this));
     element.addEventListener('outputChanged', function(e) {
-      this.registerOutput(e.detail.pipe, element, e.detail.name);
+      if (e.detail.pipe !== undefined) {
+        this.register(e.detail.pipe, element, e.detail.name, false);
+      } else {
+        this.deregister(e.detail.oldPipe, element, e.detail.name, false);
+      }
     }.bind(this));
-  }
 
- 
+    this.elements.push(element);
+
+  },
+  getOutputs: function(pipe) {
+    var rec = this.map.get(pipe);
+    if (rec !== undefined) {
+      return rec.input;
+    }
+    return [];
+  }
 });
 </script>
 </polymer-element>

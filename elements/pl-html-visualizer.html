@@ -28,13 +28,6 @@
       overflow: hidden;
     }
 
-    .connection {
-      width: 10px;
-      height: 10px;
-      border: 1px solid black;
-      border-radius: 5px;
-      position: absolute;
-    }
   </style>
   <div id='box' on-pointerdown='{{pointerDown}}' on-pointermove='{{pointerMove}}'
                 on-pointerup='{{pointerUp}}'><div id='name'>{{name}}</div><content/></div>
@@ -95,6 +88,26 @@ Polymer('pl-html-visualizer', {
   firstElementChildChanged: function() {
     this.ready();
   },
+  stateChanged: function(newState, oldState) {
+    if (newState == 'ERROR') {
+      this.$.box.style.backgroundColor='red';
+    } else {
+      this.$.box.style.backgroundColor='';
+    }
+  },
+  connectorAtPoint: function(x, y) {
+    for (var i = 0; i < this.registry.elements.length; i++) {
+      var element = this.registry.elements[i];
+      var connectors = element.visualizer.inputConnectors;
+      for (key in connectors) {
+        var connector = connectors[key];
+        if (Math.abs(element.visualizer.x + connector.x + 5 - x) < 10 &&
+            Math.abs(element.visualizer.y + connector.y + 5 - y) < 10) {
+          return {element: element, input: key};
+        }
+      }
+    }
+  },
   ready: function() {
     this.node = this.firstElementChild;
     if (this.node == undefined) {
@@ -106,6 +119,10 @@ Polymer('pl-html-visualizer', {
     if (this.name == undefined) {
       this.name = this.node.tagName;
     }
+
+    this.stateChanged(null, this.node.state);
+    new PathObserver(this.node, 'state').open(this.stateChanged.bind(this));
+
     this.style.lineHeight = this.getBoundingClientRect().height + 'px';
     var height = this.$.box.getBoundingClientRect().height;
     var width = this.$.box.getBoundingClientRect().width;
@@ -113,23 +130,74 @@ Polymer('pl-html-visualizer', {
     inputs = Object.keys(this.node.inputSpec);
     this.inputConnectors = {};
     for (var i = 0; i < inputs.length; i++) {
-      var connection = document.createElement('div');
-      connection.classList.add('connection');
+      var connection = new Connection();
       this.$.box.appendChild(connection);
-      connection.style.left = -7 + 'px';
-      connection.style.top = (i + 1) * height / (inputs.length + 1) - 7 + 'px';
-      connection.style.backgroundColor = 'white';
+      connection.x = -7;
+      connection.y = (i + 1) * height / (inputs.length + 1) - 7;
+      connection.state = 'disconnected';
+      connection.isInput = 'true';
+      connection.name = inputs[i];
       this.inputConnectors[inputs[i]] = connection;
     }
     this.outputConnectors = {};
     for (var i = 0; i < outputs.length; i++) {
-      var connection = document.createElement('div');
-      connection.classList.add('connection');
+      var connection = new Connection();
       this.$.box.appendChild(connection);
-      connection.style.left = width - 7 + 'px';
-      connection.style.top = (i + 1) * height / (outputs.length + 1) - 7 + 'px';
-      connection.style.backgroundColor = 'white';
+      connection.x = width - 7;
+      connection.y = (i + 1) * height / (outputs.length + 1) - 7;
+      connection.state = 'disconnected';
+      connection.name = outputs[i];
       this.outputConnectors[outputs[i]] = connection;
+      connection.addEventListener('click', function(e) {
+        var pipe = this.node.outputs[e.target.name];
+        this.registry.getOutputs(pipe).forEach(function(output) {
+          output.element.inputs[output.name] = undefined;
+        });
+        e.preventDefault();
+      }.bind(this));
+      connection.addEventListener('pointerdown', function(e) {
+        e.stopPropagation();
+        e.target.setPointerCapture(e.pointerId);
+        this.connectionTarget = true;
+      }.bind(this));
+      connection.addEventListener('pointerup', function(e) {
+        e.stopPropagation();
+        e.target.releasePointerCapture(e.pointerId);
+        this.connectionTarget = false;
+        var newTarget = this.connectorAtPoint(e.x, e.y);
+        this.registry.getOutputs(this.node.outputs[e.target.name]).splice(0, 1);
+        if (newTarget !== undefined) {
+          newTarget.element.inputs[newTarget.input] = this.node.outputs[e.target.name];
+        }
+     }.bind(this));
+      connection.addEventListener('pointermove', function(e) {
+        if (this.connectionTarget) {
+          var pipe = this.node.outputs[e.target.name];
+          var outputs = this.registry.getOutputs(pipe);
+          if (outputs.length > 0 && !outputs[0].fake) {
+            outputs.forEach(function(output) {
+              output.element.inputs[output.name] = undefined;
+            });
+          } else {
+            outputs.splice(0, 1);
+          }
+          outputs.push({fake: true, x: e.x - 5, y: e.y - 5});
+          var newTarget = this.connectorAtPoint(e.x, e.y);
+          if (newTarget) {
+            var connection = newTarget.element.visualizer.inputConnectors[newTarget.input];
+            if (this.hoverState !== undefined && this.hoverState.connection !== connection) {
+              this.hoverState.connection.state = this.hoverState.oldState;
+            }
+            if (this.hoverState == undefined || this.hoverState.connection !== connection) { 
+              this.hoverState = {connection: connection, oldState: connection.state};
+            }
+            connection.state = 'hovering';
+          } else if (this.hoverState !== undefined) {
+            this.hoverState.connection.state = this.hoverState.oldState;
+            this.hoverState = undefined;
+          }
+        }
+      }.bind(this));
     }
 
     // create a registry if one hasn't been initialized yet.
@@ -147,12 +215,11 @@ Polymer('pl-html-visualizer', {
     var processNewConnection = function(name, isInput) {
       var list = isInput ? this.node.inputs : this.node.outputs;
       var conList = isInput? this.inputConnectors : this.outputConnectors;
-      if (list[name].default) {
-        var color = isInput ? 'green' : 'red';
+      if (list[name] == undefined) {
+        conList[name].state = 'disconnected';
       } else {
-        var color = 'black';
+        conList[name].state = list[name].default ? 'default' : 'connected';
       }
-      conList[name].style.backgroundColor = color;
     }.bind(this);
 
     for (input in this.node.inputs) {
@@ -172,16 +239,32 @@ Polymer('pl-html-visualizer', {
     }.bind(this));
   },
   updateConnection: function(spec) {
-    var from = spec.output.length > 0 ? 
-      spec.output[0].element.visualizer.outputConnectors[spec.output[0].name] : undefined;
-    var to = spec.input.length > 0 ? 
-      spec.input[0].element.visualizer.inputConnectors[spec.input[0].name] : undefined;
-    if (from == undefined || to == undefined)
+    if (spec.output.length == 0 || spec.input.length == 0) {
+      if (spec.impl) {
+        spec.impl.remove();
+        spec.impl = undefined;
+      }
       return;
-    var fromBB = from.getBoundingClientRect();
-    var toBB = to.getBoundingClientRect();
-    var fromCenter = [fromBB.left + fromBB.width / 2, fromBB.top + fromBB.height / 2];
-    var toCenter = [toBB.left + toBB.width / 2, toBB.top + toBB.height / 2];
+    }
+
+    if (spec.output[0].fake) {
+      var fromViz = {x: 0, y: 0};
+      var from = spec.output[0];
+    } else {
+      var fromViz = spec.output[0].element.visualizer;
+      var from = fromViz.outputConnectors[spec.output[0].name];
+    }
+    if (spec.input[0].fake) {
+      var toViz = {x: 0, y: 0};
+      var to = spec.input[0];
+    } else {
+      var toViz = spec.input[0].element.visualizer;
+      var to = toViz.inputConnectors[spec.input[0].name];
+    }
+
+    var fromCenter = [from.x + fromViz.x + 5, from.y + fromViz.y + 5];
+    var toCenter = [to.x + toViz.x + 5, to.y + toViz.y + 5];
+
     // TODO is it OK to store information in the registry record directly like this?
     if (spec.impl) {
       var connector = spec.impl;
@@ -199,6 +282,44 @@ Polymer('pl-html-visualizer', {
 </script>
 </polymer-element>
 
+<polymer-element name='pl-html-connection' constructor='Connection' attributes='x y state isInput'>
+<template>
+  <style>
+    #connection {
+      width: 10px;
+      height: 10px;
+      border: 1px solid black;
+      border-radius: 5px;
+      position: absolute;
+      top: {{y}}px;
+      left: {{x}}px;
+    }
+  </style>
+  <div id='connection'></div>
+</template>
+<script>
+Polymer('pl-html-connection', {
+  isInput: false,
+  stateChanged: function() {
+    var color;
+    switch (this.state) {
+      case 'disconnected':
+        color = 'white';
+        break;
+      case 'connected':
+        color = 'black';
+        break;
+      case 'hovering':
+        color = 'yellow';
+        break;
+      case 'default':
+        color = this.isInput ? 'green' : 'red';
+    }
+    this.$.connection.style.backgroundColor = color;
+  }
+});
+</script>
+</polymer-element>
 
 <polymer-element name='pl-html-connector' constructor='Connector' attributes='startx starty endx endy'>
 <template>

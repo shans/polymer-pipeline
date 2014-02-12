@@ -45,14 +45,19 @@
   <script>
     Polymer('pl-canvas-sink', {
       ready: function() {
-        this.inputSpec = {'in':'pointlist'};
+        this.inputSpec = {'in':'canvas'};
         this.super();
       },
       context: undefined,
-      trigger: function(points) {
-        this.context.clearRect(0, 0, 300, 300);
-        if (this.context && points) {
-          points.forEach(function(point) {
+      trigger: function(input) {
+        if (!this.context) {
+          return;
+        }
+        if (input == 'clear') {
+          this.context.clearRect(0, 0, 300, 300);
+        }
+        else if (input.length > 0 && input[0].x !== undefined && input[0].y !== undefined) {
+          input.forEach(function(point) {
             this.context.fillRect(point.x, point.y, 1, 1);
           }.bind(this));
         }
@@ -76,4 +81,33 @@
   </script>
 </polymer-element>
 
+<polymer-element name="pl-mod-points" extends="pl-push-node" attributes='in width height out'>
+  <script>
+    Polymer('pl-mod-points', {
+      ready: function() {
+        this.inputSpec={'in':'pointlist', 'width':'number', 'height':'number'};
+        this.outputSpec={'out':'pointlist'};
+        this.super();
+      },
+      trigger: function(inp) {
+        return inp.in.map(function(p) { return {x: p.x % inp.width, y: p.y % inp.height}; });
+      }
+    });
+  </script>
+</polymer-element>
 
+<polymer-element name='pl-clear-before' extends='pl-push-node' attributes='in out'>
+  <script>
+    Polymer('pl-clear-before', {
+      ready: function() {
+        this.inputSpec={'in':'canvas'};
+        this.outputSpec={'out':'canvas'};
+        this.super();
+      },
+      trigger: function(inp) {
+        this.sendOutput('clear');
+        return inp;
+      }
+    });
+  </script>
+</polymer-element>
