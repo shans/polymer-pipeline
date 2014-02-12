@@ -53,8 +53,11 @@
   <pl-html-visualizer name="encircle" x='600' y='10'>
     <pl-encircle id='n3' in={{c}} out={{d}} width={{s3}} num=10></pl-encircle>
   </pl-html-visualizer>
+  <pl-html-visualizer name='clear first' x='600' y='200'>
+    <pl-clear-before id='clear' in={{d}} out={{e}}></pl-clear-before>
+  </pl-html-visualizer>
   <pl-html-visualizer name="canvas" x='750' y='10' id='phat'>
-    <pl-canvas-sink id='sink' in={{d}} context={{context}}></pl-canvas-sink>
+    <pl-canvas-sink id='sink' in={{e}} context={{context}}></pl-canvas-sink>
     <canvas width='300px' height='300px' id='output'></canvas>
   </pl-html-visualizer>
 </div>
