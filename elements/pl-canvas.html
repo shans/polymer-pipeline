@@ -29,6 +29,10 @@
       },
       trigger: function(values) {
         var result = [];
+        if (!values.in) {
+          return;
+        }
+        console.log(values.num, values.width);
         values.in.forEach(function(point) {
           for (var i = 0; i < values.num; i++) {
             result.push(

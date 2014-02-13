@@ -98,7 +98,13 @@ function matchesType(type, spec) {
             this.removeConnection(property, getOldValueFn(property), true, changed[property] == undefined);
             if (changed[property] !== undefined) {
               this.addConnection(property, changed[property], true, getOldValueFn(property));
+            } else if (this.defaults[property] !== undefined) {
+              var pipe = createPipe(this.inputSpec[property]);
+              pipe.default = true;
+              pipe.value = this.defaults[property];
+              this.inputs[property] = pipe;
             }
+            this.updateOutputs();
           }.bind(this));
         }.bind(this));
         // watch registered attributes
@@ -137,21 +143,22 @@ function matchesType(type, spec) {
           this.state = "ERROR";
           return;
         }
+        console.log(name, connection, oldPipe);
         this.fire(isInput ? 'inputChanged' : 'outputChanged', {name: name, pipe: connection, oldPipe: oldPipe});
         if (connection.default) {
           return;
         }
         if (isInput) {
           connection.registerConsumer(this);
-          this.updateOutputs();
         }
       },
-      removeConnection: function(name, connection, isInput, fireEvent) {
-        if (connection) {
-          connection.deregisterConsumer(this);
-          this.updateOutputs();
+      removeConnection: function(name, connection, isInput, noSubsequentAdd) {
+        if (!connection) {
+          return;
         }
-        if (fireEvent) {
+        connection.deregisterConsumer(this);
+        if (noSubsequentAdd) {
+          console.log('no subsequent add');
           this.fire(isInput ? 'inputChanged' : 'outputChanged', {name: name, pipe: undefined, oldPipe: connection});
         }
       },
