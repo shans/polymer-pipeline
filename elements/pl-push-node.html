@@ -143,7 +143,6 @@ function matchesType(type, spec) {
           this.state = "ERROR";
           return;
         }
-        console.log(name, connection, oldPipe);
         this.fire(isInput ? 'inputChanged' : 'outputChanged', {name: name, pipe: connection, oldPipe: oldPipe});
         if (connection.default) {
           return;
@@ -158,7 +157,6 @@ function matchesType(type, spec) {
         }
         connection.deregisterConsumer(this);
         if (noSubsequentAdd) {
-          console.log('no subsequent add');
           this.fire(isInput ? 'inputChanged' : 'outputChanged', {name: name, pipe: undefined, oldPipe: connection});
         }
       },
@@ -178,8 +176,8 @@ function matchesType(type, spec) {
             if (this.inputs[inputs[i]] !== undefined) {
               iObj[inputs[i]] = this.inputs[inputs[i]].value;
             }
-            result = this.trigger(iObj);
           }
+          result = this.trigger(iObj);
         }
         this.sendOutput(result);
       },
