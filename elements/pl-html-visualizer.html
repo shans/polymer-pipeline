@@ -1,6 +1,45 @@
 <link rel="import" href="../components/polymer/polymer.html">
 <link rel="import" href="../elements/pl-registry.html">
 
+<polymer-element name='pl-html-connection' constructor='Connection' attributes='x y state isInput'>
+<template>
+  <style>
+    #connection {
+      width: 10px;
+      height: 10px;
+      border: 1px solid black;
+      border-radius: 5px;
+      position: absolute;
+      top: {{y}}px;
+      left: {{x}}px;
+    }
+  </style>
+  <div id='connection'></div>
+</template>
+<script>
+Polymer('pl-html-connection', {
+  isInput: false,
+  stateChanged: function() {
+    var color;
+    switch (this.state) {
+      case 'disconnected':
+        color = 'white';
+        break;
+      case 'connected':
+        color = 'black';
+        break;
+      case 'hovering':
+        color = 'yellow';
+        break;
+      case 'default':
+        color = this.isInput ? 'green' : 'red';
+    }
+    this.$.connection.style.backgroundColor = color;
+  }
+});
+</script>
+</polymer-element>
+
 <polymer-element name="pl-html-visualizer" attributes="x y name">
 <template>
   <style>
@@ -60,7 +99,7 @@ Polymer('pl-html-visualizer', {
       }
     }
   },
-  name: undefined,
+  name: '{default}',
   pointers:{},
   pointerDown: function(e)
   {
@@ -116,7 +155,7 @@ Polymer('pl-html-visualizer', {
 
     this.node.visualizer = this;
 
-    if (this.name == undefined) {
+    if (this.name == '{default}') {
       this.name = this.node.tagName;
     }
 
@@ -277,45 +316,6 @@ Polymer('pl-html-visualizer', {
     connector.starty = fromCenter[1];
     connector.endx = toCenter[0];
     connector.endy = toCenter[1];
-  }
-});
-</script>
-</polymer-element>
-
-<polymer-element name='pl-html-connection' constructor='Connection' attributes='x y state isInput'>
-<template>
-  <style>
-    #connection {
-      width: 10px;
-      height: 10px;
-      border: 1px solid black;
-      border-radius: 5px;
-      position: absolute;
-      top: {{y}}px;
-      left: {{x}}px;
-    }
-  </style>
-  <div id='connection'></div>
-</template>
-<script>
-Polymer('pl-html-connection', {
-  isInput: false,
-  stateChanged: function() {
-    var color;
-    switch (this.state) {
-      case 'disconnected':
-        color = 'white';
-        break;
-      case 'connected':
-        color = 'black';
-        break;
-      case 'hovering':
-        color = 'yellow';
-        break;
-      case 'default':
-        color = this.isInput ? 'green' : 'red';
-    }
-    this.$.connection.style.backgroundColor = color;
   }
 });
 </script>
