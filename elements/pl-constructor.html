@@ -1,0 +1,86 @@
+<link rel="import" href="../components/polymer/polymer.html">
+<link rel="import" href="../elements/pl-html-visualizer.html">
+<link rel="import" href="../elements/pl-push-node.html">
+
+<polymer-element name="pl-item-wrapper" attributes='item'>
+<template>
+  <pl-html-visualizer id='viz'>
+  </pl-html-visualizer>
+</template>
+<script>
+Polymer('pl-item-wrapper', {
+  item: undefined,
+  itemChanged: function() {
+    console.log(this.item);
+    this.$.viz.appendChild(document.createElement(this.item));
+  }
+});
+</script>
+</polymer-element>
+
+<polymer-element name="pl-selector" attributes='elements'>
+<template>
+  <style>
+    #selection {
+      width: 100px;
+      height: 1000px;
+      background-color: green;
+    }
+  </style>
+  <div id='selection'>
+    <template repeat="{{e in elementList}}">
+      <pl-item-wrapper item={{e}}></pl-item-wrapper>
+    </template>
+  </div>
+</template>
+<script>
+Polymer('pl-selector', {
+  elements: '',
+  elementList: [],
+  elementsChanged: function() {
+    this.elementList = this.elements.split(' ');
+    console.log(this.elementList);
+  }
+});
+</script>
+</polymer-element>
+
+<polymer-element name="pl-html-playground">
+<template>
+  <style>
+    #canvas {
+      width: 1000px;
+      height: 1000px;
+      background-color: blue;
+    }
+  </style>
+  <div id='canvas'>
+  </div>
+</template>
+<script>
+Polymer('pl-html-playground', {
+});
+</script>
+</polymer-element>
+
+<polymer-element name='pl-constructor' attributes='elements'>
+<template>
+  <style>
+  #container {
+    display: flex;
+  }
+  </style>
+  <div id='container'>
+    <pl-selector id='items' elements={{elements}}></pl-selector>
+    <pl-html-playground id='playground'></pl-html-playground>
+  </div>
+</template>
+<script>
+Polymer('pl-constructor', {
+  elements: [],
+  ready: function() {
+    console.log(this.elements);
+  }
+});
+</script>
+</polymer-element>

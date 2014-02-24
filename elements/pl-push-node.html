@@ -75,6 +75,7 @@ function matchesType(type, spec) {
 <polymer-element name="pl-push-node">
   <script>
     Polymer('pl-push-node', {
+      alwaysPrepare: true,
       ready: function() {
         if (this.inputSpec == undefined) { this.inputSpec = {}; }
         if (this.outputSpec == undefined) { this.outputSpec = {}; }

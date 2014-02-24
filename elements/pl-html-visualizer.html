@@ -149,12 +149,12 @@ Polymer('pl-html-visualizer', {
   },
   ready: function() {
     this.node = this.firstElementChild;
+    console.log(this.node);
     if (this.node == undefined) {
       return;
     }
 
     this.node.visualizer = this;
-
     if (this.name == '{default}') {
       this.name = this.node.tagName;
     }
@@ -164,6 +164,10 @@ Polymer('pl-html-visualizer', {
 
     this.style.lineHeight = this.getBoundingClientRect().height + 'px';
     var height = this.$.box.getBoundingClientRect().height;
+    if (height == 0) {
+      height = 54; // FIXME: HOW IS THIS 0
+      this.style.lineHeight = '40px';
+    }
     var width = this.$.box.getBoundingClientRect().width;
     outputs = Object.keys(this.node.outputSpec);
     inputs = Object.keys(this.node.inputSpec);
