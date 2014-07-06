@@ -68,8 +68,8 @@ Polymer('pl-html-connection', {
     }
 
   </style>
-  <div id='box' on-pointerdown='{{pointerDown}}' on-pointermove='{{pointerMove}}'
-                on-pointerup='{{pointerUp}}'><div id='name'>{{name}}</div><content/></div>
+  <div id='box' on-down='{{pointerDown}}' on-track='{{pointerMove}}'
+                on-up='{{pointerUp}}'><div id='name'>{{name}}</div><content/></div>
 </template>
 <script>
 Polymer('pl-html-visualizer', {
@@ -100,29 +100,22 @@ Polymer('pl-html-visualizer', {
     }
   },
   name: '{default}',
-  pointers:{},
   pointerDown: function(e)
   {
     if (e.target.tagName == 'INPUT') {
       // doobly doobly doo
       return;
     }
-    e.target.setPointerCapture(e.pointerId);
-    this.pointers[e.pointerId] = true;
     e.preventDefault();
-    this.dragging = [e.x, e.y];
+    console.log(e);
+    this.dragging = [0, 0];
   },
   pointerUp: function(e) {
-    this.pointers[e.pointerId] = false;
-    e.target.releasePointerCapture(e.pointerId);
   },
   pointerMove: function(e) {
-    if (this.pointers[e.pointerId] !== true) {
-      return;
-    }
-    this.x += (e.x - this.dragging[0]);
-    this.y += (e.y - this.dragging[1]);
-    this.dragging = [e.x, e.y];
+    this.x += (e.dx - this.dragging[0]);
+    this.y += (e.dy - this.dragging[1]);
+    this.dragging = [e.dx, e.dy];
   },
   firstElementChildChanged: function() {
     this.ready();
