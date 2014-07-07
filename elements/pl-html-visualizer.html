@@ -102,12 +102,12 @@ Polymer('pl-html-visualizer', {
   name: '{default}',
   pointerDown: function(e)
   {
+    console.log('down on box');
     if (e.target.tagName == 'INPUT') {
       // doobly doobly doo
       return;
     }
     e.preventDefault();
-    console.log(e);
     this.dragging = [0, 0];
   },
   pointerUp: function(e) {
@@ -184,14 +184,13 @@ Polymer('pl-html-visualizer', {
       connection.state = 'disconnected';
       connection.name = outputs[i];
       this.outputConnectors[outputs[i]] = connection;
-      connection.addEventListener('pointerdown', function(e) {
+      connection.addEventListener('down', function(e) {
         e.stopPropagation();
-        e.target.setPointerCapture(e.pointerId);
+        console.log('down on connector');
         this.connectionTarget = true;
       }.bind(this));
-      connection.addEventListener('pointerup', function(e) {
+      connection.addEventListener('up', function(e) {
         e.stopPropagation();
-        e.target.releasePointerCapture(e.pointerId);
         this.connectionTarget = false;
         var newTarget = this.connectorAtPoint(e.x, e.y);
         var outputs = this.registry.getOutputs(this.node.outputs[e.target.name]);
@@ -206,8 +205,9 @@ Polymer('pl-html-visualizer', {
           newTarget.element.inputs[newTarget.input] = this.node.outputs[e.target.name];
         }
      }.bind(this));
-      connection.addEventListener('pointermove', function(e) {
+      connection.addEventListener('track', function(e) {
         if (this.connectionTarget) {
+          e.stopPropagation();
           var pipe = this.node.outputs[e.target.name];
           var outputs = this.registry.getOutputs(pipe);
           if (outputs.length > 0 && !outputs[0].fake) {
@@ -217,8 +217,8 @@ Polymer('pl-html-visualizer', {
           } else {
             outputs.splice(0, 1);
           }
-          outputs.push({fake: true, x: e.x - 5, y: e.y - 5});
-          var newTarget = this.connectorAtPoint(e.x, e.y);
+          outputs.push({fake: true, x: e.clientX - 5, y: e.clientY - 5});
+          var newTarget = this.connectorAtPoint(e.clientX, e.clientY);
           if (newTarget) {
             var connection = newTarget.element.visualizer.inputConnectors[newTarget.input];
             if (this.hoverState !== undefined && this.hoverState.connection !== connection) {
